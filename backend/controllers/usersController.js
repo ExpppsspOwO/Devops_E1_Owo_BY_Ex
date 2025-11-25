@@ -1,6 +1,6 @@
 const db = require('../db/knex')
 exports.list = async (req, res) => {
-// async function list(req, res) {
+  // async function list(req, res) {
   console.log('code:', req.query)
   const { code } = req.query
   // let data =await db.select('*').from('users')
@@ -34,6 +34,22 @@ exports.list_all = async (req, res) => {
   });
 };
 
+exports.list_users_all_admin = async (req, res) => {
+  try {
+    const data = await db("users").select('*').where('role', "admin")
+    console.log("2].data=>", data);
+    res.json({
+      message: "list Data endpoint",
+      list: data,
+    });
+  } catch {
+    res.status(500).json({
+      status: "Error",
+      message: error.message,
+    });
+  }
+};
+
 exports.listrole = async (req, res) => {
   console.log('role:', req.query)
   const { role } = req.query
@@ -43,6 +59,144 @@ exports.listrole = async (req, res) => {
     message: 'list Data endpoint',
     list: data
   })
+}
+
+exports.createadmin = async (req, res) => {
+  console.log('FROMDATA => ', req.body);
+  const { email, password_hash, name_th, role = "admin", status } = req.body; //, department_id, org_group_id//คำสั่งจากตัว backend ที่รับมาจากข้อมูลมาจาก frontend
+  try {
+    const [data] = await db('users').insert({
+      email,
+      password_hash,
+      name_th,
+      role,
+      status,
+      // department_id,
+      // org_group_id
+    });
+    console.log('Inserted Data ID:', data);
+    res.send({
+      status: 'Create endpoint',
+      id: data
+    })
+  } catch (error) {
+    res.status(500).json({
+      status: 'Error',
+      message: error.message
+    });
+  }
+
+}
+
+exports.usersedit = async (req, res) => {
+  try {
+    const {
+      id,
+      email,
+      name_th,
+      status,
+    } = req.body;
+    console.log("ตรวจสอบข้อมูล:", req.body);
+    const updateData = await db("users").where({ id: id }).update({ email: email, name_th: name_th, status: status });
+    console.log("ผลของการแก้ไข:", updateData);
+    res.json({
+      status: "success",
+      message: 'Update successfully',
+      rowAffected: updateData
+    })
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      status: "Error",
+      message: error.message,
+    });
+  }
+}
+
+exports.list_users_all_evaluator = async (req, res) => {
+  try {
+    const data = await db("users").select('*').where('role', "evaluator")
+    console.log("2].data=>", data);
+    res.json({
+      message: "list Data endpoint",
+      list: data,
+    });
+  } catch {
+    res.status(500).json({
+      status: "Error",
+      message: error.message,
+    });
+  }
+};
+
+exports.createevaluator = async (req, res) => {
+  console.log('FROMDATA => ', req.body);
+  const { email, password_hash, name_th, role = "evaluator", status } = req.body; //, department_id, org_group_id//คำสั่งจากตัว backend ที่รับมาจากข้อมูลมาจาก frontend
+  try {
+    const [data] = await db('users').insert({
+      email,
+      password_hash,
+      name_th,
+      role,
+      status,
+      // department_id,
+      // org_group_id
+    });
+    console.log('Inserted Data ID:', data);
+    res.send({
+      status: 'Create endpoint',
+      id: data
+    })
+  } catch (error) {
+    res.status(500).json({
+      status: 'Error',
+      message: error.message
+    });
+  }
+
+}
+
+exports.list_users_all_evaluatee = async (req, res) => {
+  try {
+    const data = await db("users").select('*').where('role', "evaluatee")
+    console.log("2].data=>", data);
+    res.json({
+      message: "list Data endpoint",
+      list: data,
+    });
+  } catch {
+    res.status(500).json({
+      status: "Error",
+      message: error.message,
+    });
+  }
+};
+
+exports.createevaluatee = async (req, res) => {
+  console.log('FROMDATA => ', req.body);
+  const { email, password_hash, name_th, role = "evaluatee", status } = req.body; //, department_id, org_group_id//คำสั่งจากตัว backend ที่รับมาจากข้อมูลมาจาก frontend
+  try {
+    const [data] = await db('users').insert({
+      email,
+      password_hash,
+      name_th,
+      role,
+      status,
+      // department_id,
+      // org_group_id
+    });
+    console.log('Inserted Data ID:', data);
+    res.send({
+      status: 'Create endpoint',
+      id: data
+    })
+  } catch (error) {
+    res.status(500).json({
+      status: 'Error',
+      message: error.message
+    });
+  }
+
 }
 
 exports.list_all_users = async (req, res) => {
@@ -117,25 +271,25 @@ exports.create = async (req, res) => {
 
 }
 
-// app.delete('/api/delete/:id', (req, res) => {
-//     const {id} = req.params
-//     try {
-//       const {id} = db('users').where('id',id).del()
-//       res.status(200).json({
-//       status: 'Delete endpoint',
-//       id: req.params.id
-//   })
-//     } catch {
-//     res.status(500).json({
-//     status: 'Error to delete',
-//     message: error.message}) 
-//   }
-// })
+exports.deleteusers = async (req, res) => {
+    const id = req.params.id
+    try {
+      const deleteData = await db('users').where('id',id).del()
+      res.status(200).json({
+      status: 'Delete endpoint',
+      id: id
+  })
+    } catch {
+    res.status(500).json({
+    status: 'Error to delete',
+    message: error.message}) 
+  }
+}
 exports.delete1 = async (req, res) => {
   const id = req.params.id;
 
   try {
-    const deletedCount = await db('users').where({id : id}).del();
+    const deletedCount = await db('users').where({ id: id }).del();
 
     if (deletedCount === 0) {
       return res.status(404).json({
@@ -173,12 +327,12 @@ exports.delete2 = async (req, res) => {
   }
 }
 
-exports.update = async(req, res) => {
+exports.update = async (req, res) => {
   try {
     const { email, name_th, role, status } = req.body;
     const id = req.params.id;
-    const updateData =await db('users')
-      .where('id', id )
+    const updateData = await db('users')
+      .where('id', id)
       .update({
         email: email,
         name_th: name_th,
@@ -191,10 +345,11 @@ exports.update = async(req, res) => {
       id: req.params.id,
       data: updateData
     })
-  } catch(error) {
-     res.status(500).json({
+  } catch (error) {
+    res.status(500).json({
       status: 'Error',
       message: error.message
-  })}
+    })
+  }
 
 }

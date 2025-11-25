@@ -5,9 +5,20 @@ const auth = require("../middleware/authMiddleware")
 // ,auth("admin","evaluatee")
 router.get("/list", usersController.list);
 router.get("/list_all", usersController.list_all);
+router.get("/list_users_all_admin", usersController.list_users_all_admin);
 
 router.get("/list_all_users", usersController.list_all_users)
 router.get("/listusers", usersController.listrole);
+
+router.put("/usersedit", usersController.usersedit)
+router.post("/createadmin", usersController.createadmin)
+router.delete("/deleteusers/:id", usersController.deleteusers)
+
+router.get('/list_users_all_evaluator', usersController.list_users_all_evaluator)
+router.post("/createevaluator", usersController.createevaluator)
+
+router.get('/list_users_all_evaluatee', usersController.list_users_all_evaluatee)
+router.post("/createevaluatee", usersController.createevaluatee)
 
 // router.get("/", usersController.get);
 router.get("/list2", usersController.list2);
