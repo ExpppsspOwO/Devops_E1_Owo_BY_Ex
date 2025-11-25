@@ -1,66 +1,94 @@
 <template>
-  <div>
-    <v-sheet border rounded>
-      <v-data-table :headers="headers" :items="categories">
+  <div class="pa-4">
+    <v-card elevation="4" rounded="lg">
+      <v-data-table :headers="headers" :items="categories" hover density="comfortable">
         <template v-slot:top>
-          <v-toolbar flat>
-            <v-toolbar-title>
-              <v-icon color="medium-emphasis" icon="mdi-book-multiple" size="x-small" start></v-icon>
-              รายชื่อผู้ใช้งาน (admin List)
+          <v-toolbar color="teal-darken-1" flat rounded="t-lg">
+            <v-toolbar-title class="font-weight-bold">
+              <v-icon icon="mdi-account-school" start></v-icon>
+              รายชื่อผู้ใช้งาน (Evaluatee List)
             </v-toolbar-title>
-
-            <v-btn class="me-2" prepend-icon="mdi-plus" rounded="lg" text="Add User" border @click="add"></v-btn>
+            <v-spacer></v-spacer>
+            <v-btn class="me-4 text-none" color="white" variant="flat" prepend-icon="mdi-plus-circle" rounded="pill"
+              text="Add Evaluatee" @click="add"></v-btn>
           </v-toolbar>
         </template>
 
         <template v-slot:item.name_th="{ value }">
-          <v-chip :text="value" border="thin opacity-25" prepend-icon="mdi-account" label>
-          </v-chip>
+          <div class="font-weight-medium text-teal-darken-2">
+            {{ value }}
+          </div>
+        </template>
+        
+        <template v-slot:item.status="{ value }">
+            <v-chip 
+              :color="value === 'active' ? 'success' : 'grey'" 
+              :text="value" 
+              class="text-uppercase font-weight-bold"
+              size="small"
+              variant="flat"
+              prepend-icon="mdi-circle-medium"
+            >
+            </v-chip>
         </template>
 
         <template v-slot:item.actions="{ item }">
           <div class="d-flex ga-2 justify-end">
-            <v-icon color="medium-emphasis" icon="mdi-pencil" size="small" @click="edit(item.id)"></v-icon>
-            <v-icon color="medium-emphasis" icon="mdi-delete" size="small" @click="remove(item.id)"></v-icon>
+            <v-btn icon="mdi-pencil" size="small" color="amber-darken-2" variant="text" @click="edit(item.id)"></v-btn>
+            <v-btn icon="mdi-delete" size="small" color="red-lighten-1" variant="text" @click="remove(item.id)"></v-btn>
           </div>
         </template>
 
         <template v-slot:no-data>
-          <v-btn prepend-icon="mdi-refresh" rounded="lg" text="Reload Data" variant="text" border
-            @click="fetchData"></v-btn>
+           <div class="pa-4 text-center">
+            <v-icon icon="mdi-alert-circle-outline" size="large" color="grey-lighten-1" class="mb-2"></v-icon>
+            <div class="text-medium-emphasis mb-2">ไม่พบข้อมูล</div>
+            <v-btn prepend-icon="mdi-refresh" rounded="pill" color="teal" variant="outlined" @click="fetchData">Reload Data</v-btn>
+          </div>
         </template>
       </v-data-table>
-    </v-sheet>
+    </v-card>
 
-    <v-dialog v-model="dialog" max-width="500">
-      <v-card :subtitle="`${isEditing ? 'Update' : 'Create'} User Data`" :title="`${isEditing ? 'Edit' : 'Add'} User`">
-        <template v-slot:text>
-          <v-row>
+    <v-dialog v-model="dialog" max-width="500" transition="dialog-bottom-transition">
+      <v-card rounded="xl">
+        <v-toolbar :color="isEditing ? 'amber-darken-1' : 'teal'" theme="dark">
+          <v-toolbar-title class="text-h6 font-weight-bold">
+            <v-icon :icon="isEditing ? 'mdi-pencil-box' : 'mdi-account-plus'" start></v-icon>
+            {{ isEditing ? 'Edit Evaluatee' : 'New Evaluatee' }}
+          </v-toolbar-title>
+          <v-btn icon="mdi-close" variant="text" @click="dialog = false"></v-btn>
+        </v-toolbar>
+
+        <v-card-text class="pa-6">
+          <v-row dense>
             <v-col cols="12">
-              <v-text-field v-model="formModel.email" label="Email"></v-text-field>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-select v-model="formModel.status" label="Status" :items="['active', 'disabled']"></v-select>
-            </v-col>
-
-            <v-col cols="12" md="6">
-              <v-text-field v-model="formModel.name_th" label="ชื่อไทย"></v-text-field>
+              <v-text-field v-model="formModel.email" label="Email" variant="outlined" color="teal" density="comfortable" prepend-inner-icon="mdi-email-outline"></v-text-field>
             </v-col>
             <v-col cols="12" md="6">
-              <v-text-field v-model="formModel.password_hash" label="password" :type="visible ? 'text' : 'password'"
+              <v-select v-model="formModel.status" label="Status" :items="['active', 'disabled']" variant="outlined" color="teal" density="comfortable"></v-select>
+            </v-col>
+            <v-col cols="12" md="6">
+              <v-text-field v-model="formModel.name_th" label="ชื่อไทย" variant="outlined" color="teal" density="comfortable" prepend-inner-icon="mdi-account-outline"></v-text-field>
+            </v-col>
+            <v-col cols="12">
+              <v-text-field 
+                v-model="formModel.password_hash" 
+                label="Password" 
+                :type="visible ? 'text' : 'password'"
                 :append-inner-icon="visible ? 'mdi-eye-off' : 'mdi-eye'"
-                @click:append-inner="visible = !visible"></v-text-field>
+                @click:append-inner="visible = !visible"
+                variant="outlined" color="teal" density="comfortable" prepend-inner-icon="mdi-lock-outline"
+                hint="ปล่อยว่างหากไม่ต้องการเปลี่ยนรหัสผ่าน" persistent-hint
+              ></v-text-field>
             </v-col>
           </v-row>
-        </template>
+        </v-card-text>
 
         <v-divider></v-divider>
-
-        <v-card-actions class="bg-surface-light">
-          <v-btn text="Cancel" variant="plain" @click="dialog = false"></v-btn>
+        <v-card-actions class="pa-4 bg-grey-lighten-5">
+          <v-btn text="Cancel" variant="text" color="grey-darken-1" @click="dialog = false"></v-btn>
           <v-spacer></v-spacer>
-          <v-btn text="Save" color="primary" @click="save"></v-btn>
+          <v-btn :text="isEditing ? 'Update' : 'Save'" :color="isEditing ? 'amber-darken-3' : 'teal-darken-1'" variant="elevated" rounded="pill" class="px-6" @click="save"></v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -71,53 +99,37 @@
 import { onMounted, ref, shallowRef, toRef } from 'vue'
 import axios from 'axios'
 
-// --- 1. การตั้งค่าตัวแปร ---
 const categories = ref([])
 const dialog = shallowRef(false)
 const visible = ref(false)  
 
-// กำหนดฟิลด์เริ่มต้นให้ตรงกับฐานข้อมูล
 function createNewRecord() {
-  return {
-    email: '',
-    name_th: '',
-    password_hash: '',
-    status: 'active',
-    // id จะถูกเติมเองเมื่อกด Edit หรือมาจาก Database
-  }
+  return { email: '', name_th: '', password_hash: '', status: 'active' }
 }
 
 const formModel = ref(createNewRecord())
-
-// เช็คว่าเป็นการ Edit หรือไม่ (ถ้ามี id แปลว่า Edit)
 const isEditing = toRef(() => !!formModel.value.id)
 
 const headers = [
   { title: 'ID', key: 'id', align: 'start' },
-  { title: 'Email', key: 'email' },
+  { title: 'EMAIL', key: 'email' },
   { title: 'ชื่อไทย', key: 'name_th' },
-  { title: 'Status', key: 'status', align: 'end' },
-  { title: 'วันที่สร้าง', key: 'created_at', align: 'end' },
-  { title: 'Actions', key: 'actions', align: 'end', sortable: false },
+  { title: 'STATUS', key: 'status', align: 'center' },
+  { title: 'CREATED DATE', key: 'created_at', align: 'end' },
+  { title: 'ACTIONS', key: 'actions', align: 'end', sortable: false },
 ]
 
-// --- 2. ฟังก์ชันหลักสำหรับดึงข้อมูล (Key สำคัญที่ทำให้หน้าจออัปเดต) ---
 const fetchData = async () => {
   try {
-    // ดึงข้อมูลใหม่จาก Server
+    // --- จุดที่แก้: URL ของ Evaluatee ---
     const { data } = await axios.get("http://localhost:7000/api/users/list_users_all_evaluatee");
-    categories.value = data.list; // อัปเดตตัวแปร categories หน้าจอจะเปลี่ยนทันที
+    categories.value = data.list;
   } catch (error) {
     console.error("Error fetching data:", error);
   }
 }
 
-// เรียกใช้ตอนเปิดหน้าเว็บครั้งแรก
-onMounted(async () => {
-  await fetchData();
-})
-
-// --- 3. ฟังก์ชันจัดการ Events ---
+onMounted(async () => { await fetchData(); })
 
 function add() {
   formModel.value = createNewRecord()
@@ -125,49 +137,31 @@ function add() {
 }
 
 async function edit(id) {
-  // หาข้อมูลจากรายการที่มีอยู่แล้วมาใส่ในฟอร์ม
   const found = categories.value.find(item => item.id === id)
   if (found) {
-    formModel.value = { ...found } // Clone ข้อมูลมาใส่ฟอร์ม
+    formModel.value = { ...found, password_hash: '' } // เคลียร์รหัส
     dialog.value = true
   }
 }
 
 async function remove(id) {
-  const ok = confirm("แน่ใจนะหนุ่มว่าจะลบ?")
-  if (!ok) return
-
+  if (!confirm("แน่ใจนะหนุ่มว่าจะลบ?")) return
   try {
-    console.log("Deleting ID:", id)
     await axios.delete(`http://localhost:7000/api/users/deleteusers/${id}`)
-
-    // ลบเสร็จ -> ดึงข้อมูลใหม่ทันที
     await fetchData()
-  } catch (error) {
-    console.error("Delete error:", error)
-  }
+  } catch (error) { console.error("Delete error:", error) }
 }
 
 async function save() {
   try {
     if (isEditing.value) {
-      // --- กรณีแก้ไข ---
-      const { data } = await axios.put("http://localhost:7000/api/users/usersedit", formModel.value)
-      console.log("Update Response -> ", data)
+      await axios.put("http://localhost:7000/api/users/usersedit", formModel.value)
     } else {
-      // --- กรณีเพิ่มใหม่ ---
-      const { data } = await axios.post("http://localhost:7000/api/users/createevaluatee", formModel.value)
-      console.log("Create Response -> ", data)
+      // --- จุดที่แก้: Create Evaluatee ---
+      await axios.post("http://localhost:7000/api/users/createevaluatee", formModel.value)
     }
-
-    // ปิด Dialog
     dialog.value = false
-
-    // หัวใจสำคัญ: โหลดข้อมูลใหม่ทันทีหลังเซฟเสร็จ หน้าจอจะอัปเดตเอง
     await fetchData()
-
-  } catch (error) {
-    console.error("Save error:", error)
-  }
+  } catch (error) { console.error("Save error:", error) }
 }
 </script>

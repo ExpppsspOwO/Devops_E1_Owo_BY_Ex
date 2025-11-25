@@ -95,9 +95,19 @@ exports.usersedit = async (req, res) => {
       email,
       name_th,
       status,
+      password_hash,
     } = req.body;
+
+    let dataToUpdate = {
+        email: email,
+        name_th: name_th,
+        status: status
+    };
+    if (password_hash && password_hash.trim() !== "") {
+        dataToUpdate.password_hash = password_hash; 
+    }
     console.log("ตรวจสอบข้อมูล:", req.body);
-    const updateData = await db("users").where({ id: id }).update({ email: email, name_th: name_th, status: status });
+    const updateData = await db("users").where({ id: id }).update(dataToUpdate);
     console.log("ผลของการแก้ไข:", updateData);
     res.json({
       status: "success",
