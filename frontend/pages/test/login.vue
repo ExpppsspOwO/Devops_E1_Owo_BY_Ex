@@ -208,7 +208,7 @@ const handleLogin = async () => {
     showSnackbar('Login Successful!', 'success')
     
     // ตรงนี้อาจจะเก็บ Token ลง LocalStorage
-    localStorage.setItem('token', response.data.token)
+    // localStorage.setItem('token', response.data.token)
 
   } catch (error) {
     console.error('Login Error:', error)
