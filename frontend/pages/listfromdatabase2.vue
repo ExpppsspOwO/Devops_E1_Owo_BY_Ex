@@ -9,7 +9,7 @@
 
               Popular categories
             </v-toolbar-title>
-            <v-btn variant="outlined" @click="logout">
+            <v-btn variant="outlined" @click="logout" style="color: #ff0000; border-color: #ff0000;">
               Logout
             </v-btn>
             <v-btn class="me-2" prepend-icon="mdi-plus" rounded="lg" text="Add a Book" border @click="add"></v-btn>
@@ -153,6 +153,7 @@ async function remove(id) {
   // const index = categories.value.findIndex(catid => catid.id === id)
   // categories.value.splice(index, 1)
 }
+
 
 async function save() {
   if (isEditing.value) {

@@ -1,4 +1,5 @@
 const db = require('../db/knex')
+const bcrypt = require('bcrypt');
 exports.list = async (req, res) => {
   // async function list(req, res) {
   console.log('code:', req.query)
@@ -256,8 +257,10 @@ exports.list3 = async (req, res) => {
 //INSERT INTO `users` (`id`, `email`, `password_hash`, `name_th`, `role`, `status`, `department_id`, `org_group_id`, `created_at`, `updated_at`) VALUES (NULL, 'ex@gmail.com', '$2b$10$fxY.nEVdF5jHCZAEIsvGzOqcrZB.D69WJFP9xCzh3LaflKntx1uwa', 'ท่านร', 'evaluator', 'active', '3', '4', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 exports.create = async (req, res) => {
   console.log('FROMDATA => ', req.body);
-  const { email, password_hash, name_th, role = "evaluatee", status, department_id, org_group_id } = req.body; //คำสั่งจากตัว backend ที่รับมาจากข้อมูลมาจาก frontend
+  const { email,password, name_th, role = "evaluatee", department_id, org_group_id } = req.body; //คำสั่งจากตัว backend ที่รับมาจากข้อมูลมาจาก frontend
   try {
+    const saltRounds = 10
+    const password_hash = await bcrypt.hash(password,saltRounds);
     const [data] = await db('users').insert({
       email,
       password_hash,
