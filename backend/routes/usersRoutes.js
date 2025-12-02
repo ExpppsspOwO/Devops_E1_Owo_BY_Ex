@@ -20,6 +20,9 @@ router.post("/createevaluator", usersController.createevaluator)
 router.get('/list_users_all_evaluatee', usersController.list_users_all_evaluatee)
 router.post("/createevaluatee", usersController.createevaluatee)
 
+router.get('/departments_show_all', usersController.departments_show_all)
+router.get('/org_groups_show_all', usersController.org_groups_show_all)
+
 // router.get("/", usersController.get);
 router.get("/list2", usersController.list2);
 router.get("/list3", usersController.list3);

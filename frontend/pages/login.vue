@@ -98,27 +98,33 @@
                       color="secondary"
                     ></v-text-field>
 
-                    <v-text-field
+                    <v-select
                       v-model="regData.department_id"
+                      :items="data_departments"
+                      item-title="name_th" 
+                      item-value="id"
                       prepend-inner-icon="mdi-domain"
-                      label="Department ID"
+                      label="Department"
                       variant="outlined"
                       density="compact"
                       class="mb-2"
                       color="secondary"
-                    ></v-text-field>
-
-                    <v-text-field
+                      :loading="loadingData"
+                    ></v-select>
+                    <v-select
                       v-model="regData.org_group_id"
+                      :items="org_groups"
+                      item-title="name_th"
+                      item-value="id"
                       prepend-inner-icon="mdi-office-building"
-                      label="Org Group ID"
+                      label="Org Group"
                       variant="outlined"
                       density="compact"
                       class="mb-4"
                       color="secondary"
-                    ></v-text-field>
-
-                    <v-btn
+                      :loading="loadingData"
+                    ></v-select>
+                     <v-btn
                       block
                       color="secondary"
                       size="large"
@@ -161,14 +167,19 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive } from 'vue'
+import { ref, computed, reactive, onMounted } from 'vue' // เพิ่ม onMounted
 import axios from 'axios'
 
 // --- State Variables ---
 const step = ref(1)
 const showPass = ref(false)
 const loading = ref(false)
+const loadingData = ref(false) // loading สำหรับตอนดึงข้อมูล Dropdown
 const isLogin = computed(() => step.value === 1)
+
+// ตัวแปรสำหรับเก็บข้อมูล Dropdown
+const data_departments = ref([])
+const org_groups = ref([])
 
 // ข้อมูลสำหรับ Login
 const loginData = reactive({
@@ -176,13 +187,13 @@ const loginData = reactive({
   password: ''
 })
 
-// ข้อมูลสำหรับ Register (เพิ่ม field ตาม JSON)
+// ข้อมูลสำหรับ Register
 const regData = reactive({
   email: '',
   password: '',
   name_th: '',
-  department_id: '',
-  org_group_id: ''
+  department_id: null, // เปลี่ยนค่าเริ่มต้นเป็น null เพื่อให้ Select แสดง label สวยๆ
+  org_group_id: null
 })
 
 // แจ้งเตือน (Snackbar)
@@ -194,11 +205,40 @@ const snackbar = reactive({
 
 // --- Functions ---
 
+// ฟังก์ชันดึงข้อมูล Dropdown (ทำงานเมื่อเปิดหน้าเว็บ)
+const fetchDropdownData = async () => {
+  loadingData.value = true
+  try {
+    // ยิงพร้อมกัน 2 API เพื่อความเร็ว (ใส่ path ให้ตรงกับ Backend ของนาย)
+    const [deptRes, orgRes] = await Promise.all([
+      axios.get('http://localhost:7000/api/users/departments_show_all'),
+      axios.get('http://localhost:7000/api/users/org_groups_show_all')
+    ])
+
+    // รับค่าลงตัวแปร
+    data_departments.value = deptRes.data.data_departments
+    org_groups.value = orgRes.data.data_org_groups
+    
+    console.log('Departments loaded:', data_departments.value)
+    console.log('Org Groups loaded:', org_groups.value)
+
+  } catch (error) {
+    console.error('Error fetching dropdown data:', error)
+    showSnackbar('ไม่สามารถดึงข้อมูลแผนกหรือกลุ่มงานได้', 'error')
+  } finally {
+    loadingData.value = false
+  }
+}
+
+// เรียกใช้ function ดึงข้อมูลตอน Component ถูก Mount
+onMounted(() => {
+  fetchDropdownData()
+})
+
 // 1. ฟังก์ชัน Login
 const handleLogin = async () => {
   loading.value = true
   try {
-    // ยิง API Login
     const response = await axios.post('http://localhost:7000/api/auth/login', {
       email: loginData.email,
       password: loginData.password
@@ -206,8 +246,6 @@ const handleLogin = async () => {
 
     console.log('Login Success:', response.data)
     showSnackbar('Login Successful!', 'success')
-    
-    // ตรงนี้อาจจะเก็บ Token ลง LocalStorage
     localStorage.setItem('token', response.data.token)
 
   } catch (error) {
@@ -218,28 +256,23 @@ const handleLogin = async () => {
   }
 }
 
-// 2. ฟังก์ชัน Register (Create User)
+// 2. ฟังก์ชัน Register
 const handleRegister = async () => {
   loading.value = true
   try {
-    // เตรียมข้อมูล Payload
     const payload = {
       email: regData.email,
-      // ปกติเราส่ง password ธรรมดา ถ้า Backend บังคับชื่อ field 'password_hash' ให้เปลี่ยน key ด้านล่างนี้
-      password: regData.password, 
-      // password_hash: regData.password, // <--- ใช้บรรทัดนี้แทนถ้า API บังคับชื่อ key นี้
+      password: regData.password,
       name_th: regData.name_th,
       department_id: regData.department_id,
       org_group_id: regData.org_group_id
     }
 
-    // ยิง API Create
     const response = await axios.post('http://localhost:7000/api/users/create', payload)
 
     console.log('Register Success:', response.data)
     showSnackbar('User Created Successfully!', 'success')
     
-    // สร้างเสร็จแล้ว สลับไปหน้า Login
     setTimeout(() => {
       step.value = 1
     }, 1500)
@@ -252,7 +285,6 @@ const handleRegister = async () => {
   }
 }
 
-// Helper แสดงแจ้งเตือน
 const showSnackbar = (text, color) => {
   snackbar.text = text
   snackbar.color = color

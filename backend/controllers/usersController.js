@@ -284,6 +284,36 @@ exports.create = async (req, res) => {
 
 }
 
+exports.departments_show_all = async (req, res) =>{
+  try {
+    const data_departments = await db('departments').select('*')
+     res.send({
+      status: 'data endpoint',
+      data_departments: data_departments
+    })
+  } catch (error) {
+    res.status(500).json({
+      status: 'Error',
+      message: error.message
+    });
+  }
+}
+
+exports.org_groups_show_all = async (req, res) =>{
+  try {
+    const data_org_groups = await db('org_groups').select('*')
+     res.send({
+      status: 'data endpoint',
+      data_org_groups: data_org_groups
+    })
+  } catch (error) {
+    res.status(500).json({
+      status: 'Error',
+      message: error.message
+    });
+  }
+}
+
 exports.deleteusers = async (req, res) => {
     const id = req.params.id
     try {
