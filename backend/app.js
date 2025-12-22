@@ -10,6 +10,8 @@ const usersRouter = require('./routes/usersRoutes')
 const authRouter = require('./routes/authRouter')
 const uploadRouter = require('./routes/uploadRouter')
 const categoryRouter = require('./routes/categoryRouter')
+const evaluatee = require('./routes/evaluateeRouter')
+
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
@@ -27,6 +29,7 @@ app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/cat", categoryRouter);
+app.use("/api/evaluatee", evaluatee);
 
 // app.get('/api/list', (req, res) => { 
 //   let data = db.select('*').from('users')

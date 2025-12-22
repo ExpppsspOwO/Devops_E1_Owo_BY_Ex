@@ -77,7 +77,9 @@
 </template>
 <script setup>
 import { onMounted, ref, shallowRef, toRef } from 'vue'
+import { useRouter } from 'vue-router' // อย่าลืม import useRouter
 import axios from 'axios'
+
 const router = useRouter()
 const currentYear = new Date().getFullYear()
 
@@ -91,11 +93,10 @@ function createNewRecord() {
   }
 }
 
-//   const books = ref([])
 const formModel = ref(createNewRecord())
 const dialog = shallowRef(false)
 const isEditing = toRef(() => !!formModel.value.id)
-const categories = ref([]);    // เก็บรายการทั้งหมด 
+const categories = ref([]); 
 
 const headers = [
   { title: 'ID', key: 'id', align: 'start' },
@@ -106,6 +107,16 @@ const headers = [
   { title: 'Actions', key: 'actions', align: 'end', sortable: false },
 ]
 
+// --- 1. สร้างฟังก์ชันสำหรับดึงข้อมูล ---
+const fetchData = async () => {
+  try {
+    const { data } = await axios.get("http://localhost:7000/api/users/list_all");
+    categories.value = data.list; 
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+}
+
 onMounted(async () => {
   const token = localStorage.getItem('token')
   if (!token) {
@@ -113,11 +124,9 @@ onMounted(async () => {
     router.push('/login')
     return
   }
-  reset()
-  const { data } = await axios.get(
-    "http://localhost:7000/api/users/list_all" // ไม่ส่ง code => ได้ list ทั้งหมด
-  );
-  categories.value = data.list; // เป็น array อยู่แล้ว
+  
+  // --- 2. เรียกใช้ตอนเข้าหน้าเว็บครั้งแรก ---
+  await fetchData(); 
 })
 
 function add() {
@@ -126,16 +135,19 @@ function add() {
 }
 
 async function edit(id) {
+  // หาข้อมูลจาก local state มาโชว์ในฟอร์มก่อนแก้ไข
   const found = categories.value.find(book => book.id === id)
-  formModel.value = {
-    id: found.id,
-    code: found.code,
-    name_th: found.name_th,
-    created_at: found.created_at,
-    year: found.year,
-    pages: found.pages,
+  if(found) {
+    formModel.value = {
+        id: found.id,
+        code: found.code,
+        name_th: found.name_th,
+        created_at: found.created_at,
+        year: found.year,
+        pages: found.pages,
+    }
+    dialog.value = true
   }
-  dialog.value = true
 }
 
 const logout = () => {
@@ -146,37 +158,44 @@ const logout = () => {
 async function remove(id) {
   const ok = confirm("แน่ใจนะหนุ่มว่าจะลบ?")
   if (!ok) return
-  console.log(id)
-  //http://localhost:7000/api/cat/catdelete/13
-  const { data } = await axios.delete(`http://localhost:7000/api/cat/catdelete/${id}`)
-  console.log("Response -> ", data)
-  // const index = categories.value.findIndex(catid => catid.id === id)
-  // categories.value.splice(index, 1)
+  
+  try {
+    const { data } = await axios.delete(`http://localhost:7000/api/cat/catdelete/${id}`)
+    console.log("Response -> ", data)
+    
+    // --- 3. เรียกโหลดข้อมูลใหม่หลังจากลบเสร็จ ---
+    await fetchData(); 
+    
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 
 async function save() {
-  if (isEditing.value) {
-    const { data } = await axios.put("http://localhost:7000/api/cat/updateCatigory", formModel.value)
-    console.log("Response -> ", data)
-    // const index = categories.value.findIndex(book => book.id === formModel.value.id)
-    // categories.value[index] = formModel.value
-  } else {
-    const { data } = await axios.post("http://localhost:7000/api/cat/createCatigory", formModel.value)
-    console.log("Response -> ", data)
-    // formModel.value.id = categories.value.length + 1
-    // categories.value.push(formModel.value)
-  }
+  try {
+    if (isEditing.value) {
+        const { data } = await axios.put("http://localhost:7000/api/cat/updateCatigory", formModel.value)
+        console.log("Update Response -> ", data)
+    } else {
+        const { data } = await axios.post("http://localhost:7000/api/cat/createCatigory", formModel.value)
+        console.log("Create Response -> ", data)
+    }
 
-  dialog.value = false
+    // --- 4. เรียกโหลดข้อมูลใหม่หลังจากบันทึกเสร็จ ---
+    await fetchData();
+
+    dialog.value = false
+  } catch (error) {
+    console.error(error)
+  }
 }
 
 function reset() {
+  // ฟังก์ชันนี้ดูเหมือนเอาไว้ Mock data ถ้าใช้ API จริงอาจจะไม่จำเป็นต้องใช้
+  // หรือเอาไว้เคลียร์ค่าเฉยๆ
   dialog.value = false
   formModel.value = createNewRecord()
-  categories.value = [
-    { id: 1, code: 'To Kill a Mockingbird', name_th: 'Harper Lee', created_at: 'Fiction', year: 1960, pages: 281 },
-    { id: 2, code: '1984', name_th: 'George Orwell', created_at: 'Dystopian', year: 1949, pages: 328 },
-  ]
+  // categories.value = [] // ไม่ควร set ค่าหลอกถ้าเราต่อ API แล้ว
 }
 </script>
