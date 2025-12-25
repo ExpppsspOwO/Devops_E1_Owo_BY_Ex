@@ -4,9 +4,9 @@
       <v-container class="fill-height" fluid>
         <v-row align="center" justify="center">
           <v-col cols="12" sm="8" md="6" lg="4">
-            
+
             <v-card class="elevation-12 rounded-xl pa-4">
-              
+
               <div class="text-center my-4">
                 <h2 class="text-h4 font-weight-bold text-primary">Welcome</h2>
                 <p class="text-subtitle-1 text-grey">
@@ -15,49 +15,25 @@
               </div>
 
               <v-window v-model="step">
-                
+
                 <v-window-item :value="1">
                   <v-form ref="loginForm" @submit.prevent="handleLogin">
-                    <v-text-field
-                      v-model="loginData.email"
-                      prepend-inner-icon="mdi-email"
-                      label="Email"
-                      variant="outlined"
-                      class="mb-2"
-                      color="primary"
-                    ></v-text-field>
+                    <v-text-field v-model="loginData.email" prepend-inner-icon="mdi-email" label="Email"
+                      variant="outlined" class="mb-2" color="primary"></v-text-field>
 
-                    <v-text-field
-                      v-model="loginData.password"
-                      prepend-inner-icon="mdi-lock"
-                      label="Password"
-                      variant="outlined"
-                      :type="showPass ? 'text' : 'password'"
+                    <v-text-field v-model="loginData.password" prepend-inner-icon="mdi-lock" label="Password"
+                      variant="outlined" :type="showPass ? 'text' : 'password'"
                       :append-inner-icon="showPass ? 'mdi-eye' : 'mdi-eye-off'"
-                      @click:append-inner="showPass = !showPass"
-                      class="mb-2"
-                      color="primary"
-                    ></v-text-field>
+                      @click:append-inner="showPass = !showPass" class="mb-2" color="primary"></v-text-field>
 
-                    <v-btn
-                      block
-                      color="primary"
-                      size="large"
-                      class="rounded-lg font-weight-bold mt-4"
-                      elevation="4"
-                      type="submit"
-                      :loading="loading"
-                    >
+                    <v-btn block color="primary" size="large" class="rounded-lg font-weight-bold mt-4" elevation="4"
+                      type="submit" :loading="loading">
                       Login
                     </v-btn>
 
                     <div class="text-center mt-6">
                       <span class="text-body-2 text-grey">Don't have an account? </span>
-                      <a 
-                        href="#" 
-                        class="text-decoration-none text-primary font-weight-bold"
-                        @click.prevent="step = 2"
-                      >
+                      <a href="#" class="text-decoration-none text-primary font-weight-bold" @click.prevent="step = 2">
                         Register
                       </a>
                     </div>
@@ -66,83 +42,32 @@
 
                 <v-window-item :value="2">
                   <v-form ref="registerForm" @submit.prevent="handleRegister">
-                    
-                    <v-text-field
-                      v-model="regData.email"
-                      prepend-inner-icon="mdi-email"
-                      label="Email"
-                      variant="outlined"
-                      density="compact"
-                      class="mb-2"
-                      color="secondary"
-                    ></v-text-field>
 
-                    <v-text-field
-                      v-model="regData.password"
-                      prepend-inner-icon="mdi-lock"
-                      label="Password"
-                      variant="outlined"
-                      density="compact"
-                      type="password"
-                      class="mb-2"
-                      color="secondary"
-                    ></v-text-field>
+                    <v-text-field v-model="regData.email" prepend-inner-icon="mdi-email" label="Email"
+                      variant="outlined" density="compact" class="mb-2" color="secondary"></v-text-field>
 
-                    <v-text-field
-                      v-model="regData.name_th"
-                      prepend-inner-icon="mdi-account"
-                      label="Name (TH)"
-                      variant="outlined"
-                      density="compact"
-                      class="mb-2"
-                      color="secondary"
-                    ></v-text-field>
+                    <v-text-field v-model="regData.password" prepend-inner-icon="mdi-lock" label="Password"
+                      variant="outlined" density="compact" type="password" class="mb-2"
+                      color="secondary"></v-text-field>
 
-                    <v-select
-                      v-model="regData.department_id"
-                      :items="data_departments"
-                      item-title="name_th" 
-                      item-value="id"
-                      prepend-inner-icon="mdi-domain"
-                      label="Department"
-                      variant="outlined"
-                      density="compact"
-                      class="mb-2"
-                      color="secondary"
-                      :loading="loadingData"
-                    ></v-select>
-                    <v-select
-                      v-model="regData.org_group_id"
-                      :items="org_groups"
-                      item-title="name_th"
-                      item-value="id"
-                      prepend-inner-icon="mdi-office-building"
-                      label="Org Group"
-                      variant="outlined"
-                      density="compact"
-                      class="mb-4"
-                      color="secondary"
-                      :loading="loadingData"
-                    ></v-select>
-                     <v-btn
-                      block
-                      color="secondary"
-                      size="large"
-                      class="rounded-lg font-weight-bold"
-                      elevation="4"
-                      type="submit"
-                      :loading="loading"
-                    >
+                    <v-text-field v-model="regData.name_th" prepend-inner-icon="mdi-account" label="Name (TH)"
+                      variant="outlined" density="compact" class="mb-2" color="secondary"></v-text-field>
+
+                    <v-select v-model="regData.department_id" :items="data_departments" item-title="name_th"
+                      item-value="id" prepend-inner-icon="mdi-domain" label="Department" variant="outlined"
+                      density="compact" class="mb-2" color="secondary" :loading="loadingData"></v-select>
+                    <v-select v-model="regData.org_group_id" :items="org_groups" item-title="name_th" item-value="id"
+                      prepend-inner-icon="mdi-office-building" label="Org Group" variant="outlined" density="compact"
+                      class="mb-4" color="secondary" :loading="loadingData"></v-select>
+                    <v-btn block color="secondary" size="large" class="rounded-lg font-weight-bold" elevation="4"
+                      type="submit" :loading="loading">
                       Create User
                     </v-btn>
 
                     <div class="text-center mt-6">
                       <span class="text-body-2 text-grey">Back to login? </span>
-                      <a 
-                        href="#" 
-                        class="text-decoration-none text-secondary font-weight-bold"
-                        @click.prevent="step = 1"
-                      >
+                      <a href="#" class="text-decoration-none text-secondary font-weight-bold"
+                        @click.prevent="step = 1">
                         Login
                       </a>
                     </div>
@@ -169,6 +94,10 @@
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue' // เพิ่ม onMounted
 import axios from 'axios'
+
+definePageMeta({
+  layout: false
+})
 
 // --- State Variables ---
 const step = ref(1)
@@ -218,7 +147,7 @@ const fetchDropdownData = async () => {
     // รับค่าลงตัวแปร
     data_departments.value = deptRes.data.data_departments
     org_groups.value = orgRes.data.data_org_groups
-    
+
     console.log('Departments loaded:', data_departments.value)
     console.log('Org Groups loaded:', org_groups.value)
 
@@ -247,7 +176,24 @@ const handleLogin = async () => {
     console.log('Login Success:', response.data)
     showSnackbar('Login Successful!', 'success')
     localStorage.setItem('token', response.data.token)
+    localStorage.setItem('user_info', JSON.stringify({
+      id: response.data.user.id,
+      name_th: response.data.user.name_th,
+      email: response.data.user.email,
+      role: response.data.user.role
+    }))
+    // 2. ดึง role ออกมาเช็คเพื่อเปลี่ยนหน้า (ทำใน try เลย)
+    const userRole = response.data.user.role // หรือ response.data.user.role.toLowerCase() กันพลาด
 
+    if (userRole === 'admin') {
+      await navigateTo('/') // หรือไปหน้า /admin
+    } else if (userRole === 'evaluatee') {
+      // ตรวจสอบ path ให้ดีว่าตรงกับชื่อไฟล์ใน pages หรือไม่ 
+      // เช่น pages/EvidenceSubmission.vue -> '/EvidenceSubmission'
+      await navigateTo('/EvidenceSubmission')
+    } else {
+      await navigateTo('/') // กรณีอื่นๆ ไปหน้าแรก
+    }
   } catch (error) {
     console.error('Login Error:', error)
     showSnackbar('Login Failed: ' + (error.response?.data?.message || error.message), 'error')
@@ -272,7 +218,7 @@ const handleRegister = async () => {
 
     console.log('Register Success:', response.data)
     showSnackbar('User Created Successfully!', 'success')
-    
+
     setTimeout(() => {
       step.value = 1
     }, 1500)

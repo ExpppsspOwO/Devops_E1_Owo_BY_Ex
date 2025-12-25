@@ -1,17 +1,49 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useMenu } from '~/composables/useMenu'
 
-// TODO: โหลด role จาก store/cookie หลัง login จริง
-const role = ref('user') // 'admin' | 'evaluator' | 'user'
-const { menu } = useMenu(role)
+const router = useRouter()
 const drawer = ref(true)
+const role = ref('') // เริ่มต้นเป็นค่าว่าง รอโหลดจาก LocalStorage
 
-// Mock User Data (สมมติข้อมูลผู้ใช้)
-const userProfile = {
-  name: 'Somchai Jaidee',
-  email: 'somchai@vec.go.th',
-  initials: 'SJ'
+// เรียกใช้ Composable (เมนูจะเปลี่ยนตาม role.value อัตโนมัติ)
+const { menu } = useMenu(role)
+
+// ข้อมูลโปรไฟล์มุมขวาบน
+const userProfile = ref({
+  name: 'Guest',
+  email: '',
+  initials: 'G'
+})
+
+// ✅ โหลด Role และข้อมูลจริงเมื่อหน้าเว็บโหลดเสร็จ
+onMounted(() => {
+  const userStr = localStorage.getItem('user_info')
+  const token = localStorage.getItem('token')
+
+  if (userStr && token) {
+    const user = JSON.parse(userStr)
+    const roleName = (user.role || '').toLowerCase().trim(); 
+    role.value = roleName;
+    
+   // อัปเดตโปรไฟล์
+      userProfile.value = {
+        name: user.name_th || 'User',
+        email: user.email,
+        initials: (user.name_th || 'U').charAt(0)
+    }
+  } else {
+    // ถ้าไม่มี Token อาจจะดีดไป Login (Optional)
+    // router.push('/login')
+  }
+})
+
+// ฟังก์ชัน Logout
+const logout = () => {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user_info')
+  router.push('/login')
 }
 </script>
 
@@ -41,11 +73,8 @@ const userProfile = {
             v-for="(it, j) in section.items"
             :key="j"
             :to="it.to"
-            :href="it.href"
-            :target="it.target"
             :prepend-icon="it.icon"
             :title="it.label"
-            :value="it.to || it.href"
             active-color="primary"
             rounded="lg"
             class="mb-1"
@@ -55,7 +84,7 @@ const userProfile = {
 
       <template v-slot:append>
         <div class="pa-4">
-          <v-btn block color="error" variant="tonal" prepend-icon="mdi-logout">
+          <v-btn block color="error" variant="tonal" prepend-icon="mdi-logout" @click="logout">
             ออกจากระบบ
           </v-btn>
         </div>
@@ -95,15 +124,14 @@ const userProfile = {
           </v-list-item>
           <v-divider class="my-2"></v-divider>
           <v-list-item prepend-icon="mdi-account-cog" title="ตั้งค่าบัญชี" value="settings"></v-list-item>
-          <v-list-item prepend-icon="mdi-logout" title="ออกจากระบบ" value="logout" color="error"></v-list-item>
+          <v-list-item prepend-icon="mdi-logout" title="ออกจากระบบ" value="logout" color="error" @click="logout"></v-list-item>
         </v-list>
       </v-menu>
     </v-app-bar>
 
     <v-main class="bg-grey-lighten-4">
       <v-container fluid class="py-6 px-6">
-        <slot />
-      </v-container>
+        <slot /> </v-container>
       
       <v-footer color="transparent" class="text-caption justify-center text-medium-emphasis mt-4">
         © 2025 VEC Skills — Evaluation System
@@ -113,5 +141,5 @@ const userProfile = {
 </template>
 
 <style scoped>
-/* เพิ่ม CSS เล็กน้อยถ้าต้องการ */
+/* CSS เพิ่มเติมถ้าต้องการ */
 </style>

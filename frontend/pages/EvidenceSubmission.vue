@@ -21,27 +21,19 @@
     </v-row>
 
     <div v-if="!loading">
-      
+
       <v-expansion-panels multiple variant="accordion">
-        
-        <v-expansion-panel 
-          v-for="(topic, tIndex) in evaluationData" 
-          :key="topic.id" 
-          elevation="1"
-        >
-          
+
+        <v-expansion-panel v-for="(topic, tIndex) in evaluationData" :key="topic.id" elevation="1">
+
           <v-expansion-panel-title>
             <div class="d-flex align-center w-100 mr-2">
               <span class="text-subtitle-1 font-weight-bold primary--text mr-auto">
                 {{ topic.title_th }}
               </span>
-              
-              <v-chip
-                size="small"
-                :color="isTopicComplete(topic) ? 'success' : 'grey-lighten-1'"
-                variant="flat"
-                class="ml-2"
-              >
+
+              <v-chip size="small" :color="isTopicComplete(topic) ? 'success' : 'grey-lighten-1'" variant="flat"
+                class="ml-2">
                 {{ getTopicProgress(topic) }}
               </v-chip>
             </div>
@@ -51,7 +43,7 @@
             <v-list lines="two" class="pa-0">
               <template v-for="(indicator, iIndex) in topic.indicators" :key="indicator.id">
                 <v-list-item class="px-0">
-                  
+
                   <div class="mb-2">
                     <v-list-item-title class="font-weight-medium mb-1 text-wrap">
                       <v-chip size="x-small" color="primary" label class="mr-2">
@@ -59,21 +51,15 @@
                       </v-chip>
                       {{ indicator.name_th }}
                     </v-list-item-title>
-                    
+
                     <v-list-item-subtitle class="text-wrap">
                       {{ indicator.description }}
                     </v-list-item-subtitle>
 
-                    <div v-if="indicator.uploaded_files && indicator.uploaded_files.length > 0" class="d-flex flex-wrap gap-2 mt-2">
-                      <v-chip
-                        v-for="file in indicator.uploaded_files"
-                        :key="file.id"
-                        color="success"
-                        variant="tonal"
-                        size="small"
-                        closable
-                        @click:close="deleteFile(file.id)"
-                      >
+                    <div v-if="indicator.uploaded_files && indicator.uploaded_files.length > 0"
+                      class="d-flex flex-wrap gap-2 mt-2">
+                      <v-chip v-for="file in indicator.uploaded_files" :key="file.id" color="success" variant="tonal"
+                        size="small" closable @click:close="deleteFile(file.id, indicator)">
                         <template v-slot:prepend>
                           <v-icon icon="mdi-file-check" start></v-icon>
                         </template>
@@ -84,19 +70,10 @@
 
                   <template v-slot:append>
                     <div class="d-flex align-center mt-2" style="width: 100%; min-width: 350px; gap: 10px;">
-                      
-                      <v-select
-                        v-if="indicator.allowed_evidence.length > 1"
-                        v-model="indicator.selectedEvidenceType"
-                        :items="indicator.allowed_evidence"
-                        item-title="name_th"
-                        item-value="id"
-                        label="เลือกประเภท"
-                        density="compact"
-                        variant="outlined"
-                        hide-details
-                        style="width: 160px;"
-                      ></v-select>
+
+                      <v-select v-if="indicator.allowed_evidence.length > 1" v-model="indicator.selectedEvidenceType"
+                        :items="indicator.allowed_evidence" item-title="name_th" item-value="id" label="เลือกประเภท"
+                        density="compact" variant="outlined" hide-details style="width: 160px;"></v-select>
 
                       <div v-else class="text-right d-flex flex-column align-end justify-center" style="width: 140px;">
                         <span class="text-caption text-medium-emphasis">สิ่งที่ต้องส่ง:</span>
@@ -105,20 +82,10 @@
                         </v-chip>
                       </div>
 
-                      <v-file-input
-                        v-model="indicator.tempFile"
-                        :loading="uploadingId === indicator.id"
-                        :disabled="uploadingId === indicator.id"
-                        label="เลือกไฟล์..."
-                        prepend-icon=""
-                        prepend-inner-icon="mdi-paperclip"
-                        variant="outlined"
-                        density="compact"
-                        hide-details
-                        single-line
-                        @update:modelValue="handleFileUpload(indicator)"
-                        style="flex: 1;"
-                      ></v-file-input>
+                      <v-file-input v-model="indicator.tempFile" :loading="uploadingId === indicator.id"
+                        :disabled="uploadingId === indicator.id" label="เลือกไฟล์..." prepend-icon=""
+                        prepend-inner-icon="mdi-paperclip" variant="outlined" density="compact" hide-details single-line
+                        @update:modelValue="handleFileUpload(indicator)" style="flex: 1;"></v-file-input>
                     </div>
                   </template>
 
@@ -130,7 +97,7 @@
 
         </v-expansion-panel>
       </v-expansion-panels>
-      
+
       <v-alert v-if="evaluationData.length === 0" type="info" variant="tonal" class="mt-4">
         ไม่พบรายการประเมินสำหรับปีการศึกษานี้
       </v-alert>
@@ -147,8 +114,10 @@ export default {
   data() {
     return {
       currentUser: { name_th: 'User', role: '', dept_id: '', id: null },
+      currentPeriodId: null, 
+      currentPeriodName: '', 
       token: '',
-      loading: false,
+      loading: true, // ✅ เริ่มต้นเป็น true เพื่อกัน Hydration Mismatch
       uploadingId: null,
       evaluationData: []
     };
@@ -162,26 +131,22 @@ export default {
     this.initPage();
   },
   methods: {
-    // Helper: นับความคืบหน้าของแต่ละหัวข้อ
     getTopicProgress(topic) {
       if (!topic.indicators) return '0/0';
       const completed = topic.indicators.filter(i => i.uploaded_files && i.uploaded_files.length > 0).length;
       return `${completed} / ${topic.indicators.length}`;
     },
-    // Helper: เช็คว่าหัวข้อนี้ทำครบทุกข้อหรือยัง (เพื่อเปลี่ยนสี Chip)
     isTopicComplete(topic) {
-        if (!topic.indicators) return false;
-        const completed = topic.indicators.filter(i => i.uploaded_files && i.uploaded_files.length > 0).length;
-        return completed === topic.indicators.length && topic.indicators.length > 0;
+      if (!topic.indicators) return false;
+      const completed = topic.indicators.filter(i => i.uploaded_files && i.uploaded_files.length > 0).length;
+      return completed === topic.indicators.length && topic.indicators.length > 0;
     },
-
-    // --- Logic เดิมทั้งหมด ---
     parseJwt(token) {
       try {
         const base64Url = token.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function (c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
         }).join(''));
         return JSON.parse(jsonPayload);
       } catch (e) {
@@ -198,41 +163,58 @@ export default {
       }
       this.token = token;
 
+      // จัดการ User Info
       const userStr = localStorage.getItem('user_info');
       if (userStr) {
-        try { this.currentUser = JSON.parse(userStr); } catch(e) {}
-      } 
-      
+        try { this.currentUser = JSON.parse(userStr); } catch (e) { }
+      }
       if (!this.currentUser.id) {
         const decoded = this.parseJwt(token);
         this.currentUser = {
-          id: decoded.id || decoded.sub, 
+          id: decoded.id || decoded.sub,
           name_th: decoded.name || decoded.username || 'ผู้ใช้งาน',
           dept_id: decoded.dept_id || '-',
           role: decoded.role || 'user'
         };
       }
 
-      await this.fetchEvaluationData();
+      // ดึงปีการศึกษา
+      try {
+        const periodRes = await axios.get('http://localhost:7000/api/evaluatee/current-period');
+        this.currentPeriodId = periodRes.data.id;
+        this.currentPeriodName = periodRes.data.period_name;
+
+        console.log("Current Period:", this.currentPeriodName, "(ID:", this.currentPeriodId, ")");
+
+        // ✅ เรียกแค่ตรงนี้พอ (เมื่อได้ ID แล้ว)
+        await this.fetchEvaluationData();
+
+      } catch (error) {
+        console.error("Failed to get period:", error);
+        // ถ้าดึงปีไม่ได้ อาจจะ alert หรือ fallback ไปค่า default
+        alert("หมดเวลาส่งผลการประเมิน หรือ เกิดปัญหาทางเทคนิค โปรดติดต่อ แอดมิน");
+        this.loading = false; // ปิด loading ด้วยไม่งั้นหมุนค้าง
+      }
     },
 
     async fetchEvaluationData() {
-      this.loading = true;
+      // ไม่ต้อง this.loading = true ตรงนี้ เพราะมัน true มาตั้งแต่ต้นแล้ว หรือถูกจัดการใน initPage
       try {
         const response = await axios.get('http://localhost:7000/api/evaluatee/form-data', {
           headers: { Authorization: `Bearer ${this.token}` },
-          params: { period_id: 1 } 
+          // ✅ แก้ตรงนี้: ใช้ตัวแปร currentPeriodId แทนเลข 1
+          params: { period_id: this.currentPeriodId } 
         });
         this.evaluationData = response.data;
         this.processEvaluationData();
       } catch (error) {
         console.error("Fetch Error:", error);
         if (error.response && error.response.status === 401) {
-            alert('Session หมดอายุ กรุณา Login ใหม่');
-            this.$router.push('/login');
+          alert('Session หมดอายุ กรุณา Login ใหม่');
+          this.$router.push('/login');
         }
       } finally {
-        this.loading = false;
+        this.loading = false; // ปิด Loading เมื่อทุกอย่างเสร็จสิ้น
       }
     },
 
@@ -263,7 +245,8 @@ export default {
 
       const formData = new FormData();
       formData.append('file', file);
-      formData.append('period_id', 1);
+      // ✅ แก้ตรงนี้: ใช้ตัวแปร currentPeriodId แทน this.currentUser.id (ที่ใส่ผิดช่อง) หรือเลข 1
+      formData.append('period_id', this.currentPeriodId); 
       formData.append('evaluatee_id', this.currentUser.id);
       formData.append('indicator_id', indicator.id);
       formData.append('evidence_type_id', indicator.selectedEvidenceType);
@@ -275,10 +258,10 @@ export default {
             'Authorization': `Bearer ${this.token}`
           }
         });
-
+        console.log("Response from upload:", res.data);
         if (!indicator.uploaded_files) indicator.uploaded_files = [];
         indicator.uploaded_files.push({
-          id: res.data.attachment_id || Date.now(),
+         id: res.data.attachment_id || res.data.id || res.data.insertId,
           file_name: file.name
         });
         indicator.tempFile = null;
@@ -291,9 +274,18 @@ export default {
       }
     },
 
-    async deleteFile(fileId) {
-       if(!confirm('ต้องการลบไฟล์นี้ใช่ไหม?')) return;
-       console.log('Delete:', fileId);
+    async deleteFile(fileId, indicator) {
+      if (!confirm('ต้องการลบไฟล์นี้ใช่ไหม?')) return;
+
+      try {
+        await axios.delete(`http://localhost:7000/api/upload/file/${fileId}`, {
+          headers: { Authorization: `Bearer ${this.token}` }
+        });
+        indicator.uploaded_files = indicator.uploaded_files.filter(f => f.id !== fileId);
+      } catch (error) {
+        console.error("Delete Error:", error);
+        alert('ลบไฟล์ไม่สำเร็จ: ' + (error.response?.data?.message || error.message));
+      }
     }
   }
 };

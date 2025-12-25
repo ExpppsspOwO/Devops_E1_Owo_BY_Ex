@@ -10,6 +10,7 @@ const usersRouter = require('./routes/usersRoutes')
 const authRouter = require('./routes/authRouter')
 const uploadRouter = require('./routes/uploadRouter')
 const categoryRouter = require('./routes/categoryRouter')
+const admin = require('./routes/adminRouter')
 const evaluatee = require('./routes/evaluateeRouter')
 
 
@@ -29,6 +30,7 @@ app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/upload", uploadRouter);
 app.use("/api/cat", categoryRouter);
+app.use("/api/admin", admin);
 app.use("/api/evaluatee", evaluatee);
 
 // app.get('/api/list', (req, res) => { 

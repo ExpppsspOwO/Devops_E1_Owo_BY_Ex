@@ -96,3 +96,28 @@ exports.getEvaluationForm = async (req, res) => {
         res.status(500).json({ message: "Server Error", error: error.message });
     }
 };
+exports.getCurrentPeriod = async (req, res) => {
+    try {
+        // 1. ลองหาปีที่ active = 1 ก่อน
+        let period = await db('evaluation_periods')
+            .where('is_active', 1)
+            .first();
+
+        // 2. ถ้าไม่มี active เลย ให้เอาปีล่าสุด (ID มากสุด)
+        // if (!period) {
+        //     period = await db('evaluation_periods')
+        //         .orderBy('id', 'desc')
+        //         .first();
+        // }
+
+        if (!period) {
+            return res.status(404).json({ message: "No period found" });
+        }
+
+        res.json(period);
+
+    } catch (error) {
+        console.error("Get Period Error:", error);
+        res.status(500).json({ message: "Server Error" });
+    }
+};

@@ -1,166 +1,93 @@
+<!-- pages/dashboard/index.vue -->
 <script setup>
-definePageMeta({ layout: 'default' })
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 
-const router = useRouter()
-const { $api } = useNuxtApp()
 const auth = useAuthStore()
+const stats = ref({ uploads: 0, evaluations: 0, score: 0 })
+const loading = ref(true)
 
-const search = ref('')
-const items = ref([])
-const total = ref(0)
-const loading = ref(false)
-const errorMsg = ref('')
-const confirmDialog = ref(false)
-const selectedUser = ref(null)
-
-const options = ref({
-  page: 1,
-  itemsPerPage: 10,
-  sortBy: [{ key: 'id', order: 'desc' }]
-})
-
-// โหลดข้อมูล
-async function load() {
-  loading.value = true
-  errorMsg.value = ''
-  try {
-    const sortKey = options.value.sortBy?.[0]?.key || 'id'
-    const sortDesc = ((options.value.sortBy?.[0]?.order) || 'desc') === 'desc'
-
-    const { data } = await $api.get('/api/users/server', {
-      params: {
-        page: options.value.page,
-        itemsPerPage: options.value.itemsPerPage,
-        sortBy: sortKey,
-        sortDesc,
-        search: search.value
-      }
-    })
-    items.value = data.items
-    total.value = data.total
-  } catch (e) {
-    errorMsg.value = e.response?.data?.message || e.message || 'Load failed'
-  } finally {
+onMounted(async () => {
+  // โหลดข้อมูลตัวอย่าง
+  setTimeout(() => {
+    stats.value = { uploads: 12, evaluations: 5, score: 88 }
     loading.value = false
-  }
-}
-
-onMounted(() => {
-  if (!auth.isLogged) {
-    router.push('/login')
-    return
-  }
-  load()
+  }, 800)
 })
-watch(options, load, { deep: true })
-watch(search, () => { options.value.page = 1; load() })
-
 function logout() {
   auth.logout()
-  router.push('/login')
-}
-
-/* ✅ เรียกตอนกดปุ่ม Delete */
-function askDelete(user) {
-  selectedUser.value = user
-  confirmDialog.value = true
-}
-
-/* ✅ เมื่อกดยืนยันใน dialog */
-async function confirmDelete() {
-  try {
-    await $api.delete(`/api/users/${selectedUser.value.id}`)
-    confirmDialog.value = false
-    selectedUser.value = null
-    await load()
-  } catch (e) {
-    errorMsg.value = e.response?.data?.message || e.message || 'Delete failed'
-  }
+  navigateTo('/login')
 }
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-6">
-    <div class="flex items-center justify-between mb-4 gap-3">
-      <div class="flex items-center gap-3">
-        <NuxtLink to="/users/new">
-          <v-btn color="primary" variant="elevated">Create User</v-btn>
-        </NuxtLink>
-        <a href="http://localhost:7000/docs" target="_blank">
-          <v-btn variant="tonal">Open API Docs</v-btn>
-        </a>
-        <NuxtLink to="/upload">
-          <v-btn variant="tonal">Upload</v-btn>
-        </NuxtLink>
-      </div>
+  <v-app>
+    <!-- NAVBAR -->
+    <v-app-bar color="primary" dark>
+      <v-app-bar-title>Personnel Evaluation System</v-app-bar-title>
+      <v-spacer />
+      <v-btn icon><v-icon>mdi-bell-outline</v-icon></v-btn>
+      <v-menu>
+        <template #activator="{ props }">
+          <v-btn icon v-bind="props"><v-icon>mdi-account-circle</v-icon></v-btn>
+        </template>
+        <v-list>
+          <v-list-item title="Profile" prepend-icon="mdi-account" />
+          <v-list-item title="Logout" prepend-icon="mdi-logout" @click="logout" />
+        </v-list>
+      </v-menu>
+    </v-app-bar>
 
-      <div class="flex items-center gap-3">
-        <v-text-field v-model="search" label="Search" density="comfortable" hide-details />
-        <v-btn color="error" @click="logout">Logout</v-btn>
-      </div>
-    </div>
+    <!-- SIDEBAR + CONTENT -->
+    <v-main>
+      <v-container class="py-6">
+        <!-- Greeting -->
+        <h2 class="text-h5 mb-4">สวัสดี {{ auth.user?.name || 'ผู้ใช้' }} 👋</h2>
 
-    <v-card>
-      <v-card-title class="text-lg">Users</v-card-title>
-      <v-card-text>
-        <v-alert
-          v-if="errorMsg"
-          type="error"
-          variant="tonal"
-          class="mb-3"
-        >
-          {{ errorMsg }}
-        </v-alert>
+        <!-- Stats Cards -->
+        <v-row v-if="!loading" dense>
+          <v-col cols="12" md="4">
+            <v-card variant="tonal" color="indigo">
+              <v-card-title>ไฟล์หลักฐาน</v-card-title>
+              <v-card-text class="text-h5">{{ stats.uploads }}</v-card-text>
+            </v-card>
+          </v-col>
 
-        <v-data-table-server
-          v-model:items-per-page="options.itemsPerPage"
-          v-model:page="options.page"
-          :items-length="total"
-          :items="items"
-          :loading="loading"
-          :headers="[
-            { title:'ID', key:'id' },
-            { title:'Name', key:'name_th' },
-            { title:'Email', key:'email' },
-            { title:'Role', key:'role' },
-            { title:'Created', key:'created_at' },
-            { title:'Actions', key:'actions', sortable:false }
-          ]"
-          :sort-by="options.sortBy"
-          @update:sort-by="(s) => options.sortBy = s"
-        >
-          <template #item.actions="{ item }">
-            <NuxtLink :to="`/users/${item.id}`">
-              <v-btn size="small" variant="text">Edit</v-btn>
-            </NuxtLink>
-            <v-btn
-              size="small"
-              color="error"
-              variant="text"
-              @click="askDelete(item)"
-            >
-              Delete
-            </v-btn>
-          </template>
-        </v-data-table-server>
-      </v-card-text>
-    </v-card>
+          <v-col cols="12" md="4">
+            <v-card variant="tonal" color="green">
+              <v-card-title>การประเมินทั้งหมด</v-card-title>
+              <v-card-text class="text-h5">{{ stats.evaluations }}</v-card-text>
+            </v-card>
+          </v-col>
 
-    <!-- ✅ Dialog Confirm Delete -->
-    <v-dialog v-model="confirmDialog" max-width="400">
-      <v-card>
-        <v-card-title class="text-h6">Confirm Delete</v-card-title>
-        <v-card-text>
-          Delete user <strong>#{{ selectedUser?.id }}</strong> ({{ selectedUser?.name_th }}) ?
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="confirmDialog = false">Cancel</v-btn>
-          <v-btn color="error" variant="flat" @click="confirmDelete">Delete</v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </div>
+          <v-col cols="12" md="4">
+            <v-card variant="tonal" color="deep-orange">
+              <v-card-title>คะแนนเฉลี่ย</v-card-title>
+              <v-card-text class="text-h5">{{ stats.score }}</v-card-text>
+            </v-card>
+          </v-col>
+        </v-row>
+
+        <!-- Loading / Empty -->
+        <v-skeleton-loader v-else type="card" class="my-6" />
+
+        <!-- Action Section -->
+        <v-card class="mt-8">
+          <v-card-title>การดำเนินการ</v-card-title>
+          <v-card-text>
+            <v-btn color="primary" class="mr-2">เพิ่มหลักฐาน</v-btn>
+            <v-btn color="secondary" class="mr-2">ตารางการประเมิน</v-btn>
+            <v-btn variant="tonal">ดูคู่มือระบบ</v-btn>
+          </v-card-text>
+        </v-card>
+      </v-container>
+    </v-main>
+
+    <!-- FOOTER -->
+    <v-footer class="text-center" app>
+      <v-spacer />
+      <span class="text-caption">© 2025 VEC Skills | Powered by KruOak</span>
+      <v-spacer />
+    </v-footer>
+  </v-app>
 </template>
