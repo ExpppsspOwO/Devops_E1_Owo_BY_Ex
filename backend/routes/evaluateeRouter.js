@@ -6,8 +6,8 @@ const auth  = require('../middleware/authMiddleware'); // สมมติว่�
 
 // 1. Route สำหรับดึงโจทย์และสถานะการส่งงาน (GET /api/evaluatee/form-data)
 // ยิงมาที่: http://localhost:7000/api/evaluatee/form-data
-console.log('Controller:', evaluateeController);
-console.log('Function:', evaluateeController.getEvaluationForm); // <--- น่าจะเป็น undefined
+// console.log('Controller:', evaluateeController);
+// console.log('Function:', evaluateeController.getEvaluationForm); // <--- น่าจะเป็น undefined
 // console.log('Middleware:', verifyToken); // <--- หรืออันนี้ undefined
 router.get('/form-data', auth("evaluatee"), evaluateeController.getEvaluationForm);
 

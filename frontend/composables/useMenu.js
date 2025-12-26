@@ -30,6 +30,11 @@ export const useMenu = (role) => {
               label: 'รายชื่อใน ระบบ', 
               icon: 'mdi-account-group', 
               to: '/list_admin' // หรือ path ของ listfromdatabase2
+            },
+            { 
+              label: 'หมวดวิชา', 
+              icon: 'mdi-shape', 
+              to: '/listfromdatabase2' // หรือ path ของ listfromdatabase2
             }
           ]
         }
@@ -47,7 +52,7 @@ export const useMenu = (role) => {
             { 
               label: 'ส่งหลักฐาน (Submission)', 
               icon: 'mdi-file-document-arrow-right', 
-              to: '/evaluation/submission' // หรือ path ของ EvidenceSubmission
+              to: '/EvidenceSubmission' // หรือ path ของ EvidenceSubmission
             }
           ]
         }
@@ -57,7 +62,20 @@ export const useMenu = (role) => {
     // ------------------------------------------------
     // 3. กรณีอื่นๆ (User ทั่วไป หรือยังไม่ Login)
     // ------------------------------------------------
-    return []
+    else if (role.value === 'evaluator') {
+      return [
+        {
+          label: 'การประเมินของฉัน',
+          items: [
+            { 
+              label: 'ประเมินบุคลากร', 
+              icon: 'mdi-badge-account', 
+              to: '/evaluation_index' // หรือ path ของ EvidenceSubmission
+            }
+          ]
+        }
+      ]
+    }
   })
 
   return { menu }

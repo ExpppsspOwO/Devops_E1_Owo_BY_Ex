@@ -94,6 +94,7 @@
 <script setup>
 import { ref, computed, reactive, onMounted } from 'vue' // เพิ่ม onMounted
 import axios from 'axios'
+import { useAuthStore } from '~/stores/auth'
 
 definePageMeta({
   layout: false
@@ -105,6 +106,8 @@ const showPass = ref(false)
 const loading = ref(false)
 const loadingData = ref(false) // loading สำหรับตอนดึงข้อมูล Dropdown
 const isLogin = computed(() => step.value === 1)
+const authStore = useAuthStore() // ✅ 2. เรียกใช้
+const router = useRouter()
 
 // ตัวแปรสำหรับเก็บข้อมูล Dropdown
 const data_departments = ref([])
@@ -173,26 +176,24 @@ const handleLogin = async () => {
       password: loginData.password
     })
 
-    console.log('Login Success:', response.data)
-    showSnackbar('Login Successful!', 'success')
-    localStorage.setItem('token', response.data.token)
-    localStorage.setItem('user_info', JSON.stringify({
-      id: response.data.user.id,
-      name_th: response.data.user.name_th,
-      email: response.data.user.email,
-      role: response.data.user.role
-    }))
-    // 2. ดึง role ออกมาเช็คเพื่อเปลี่ยนหน้า (ทำใน try เลย)
-    const userRole = response.data.user.role // หรือ response.data.user.role.toLowerCase() กันพลาด
+    authStore.setAuth(response.data.token, response.data.user)
 
-    if (userRole === 'admin') {
-      await navigateTo('/') // หรือไปหน้า /admin
-    } else if (userRole === 'evaluatee') {
-      // ตรวจสอบ path ให้ดีว่าตรงกับชื่อไฟล์ใน pages หรือไม่ 
-      // เช่น pages/EvidenceSubmission.vue -> '/EvidenceSubmission'
-      await navigateTo('/EvidenceSubmission')
-    } else {
-      await navigateTo('/') // กรณีอื่นๆ ไปหน้าแรก
+    showSnackbar('Login Successful!', 'success')
+
+    // เช็ค Role
+    const role = authStore.user?.role // หรือ response.data.user.role
+
+    // ✅ แก้ไขเงื่อนไขให้เป็น if - else if - else
+    if (role === 'admin') {
+      await router.push('/') // ใช้ await เพื่อความชัวร์
+    } else if (role === 'evaluatee') {
+      await router.push('/EvidenceSubmission')  
+    }  else if (role === 'evaluator') {
+      await router.push('/evaluation_index') 
+    }else {
+      // กรณี Login ผ่านแต่ไม่มี Role หรือเป็น Role อื่น
+      // ไม่ควรส่งกลับไปหน้า Login ซ้ำ (เพราะ Login ผ่านแล้ว) อาจจะไปหน้าแรกแทน
+      await router.push('/')
     }
   } catch (error) {
     console.error('Login Error:', error)

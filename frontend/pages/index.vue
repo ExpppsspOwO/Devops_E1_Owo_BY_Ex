@@ -16,8 +16,12 @@ onMounted(async () => {
 })
 function logout() {
   auth.logout()
-  navigateTo('/login')
+  MapsTo('/login')
 }
+
+definePageMeta({
+  middleware: 'auth'
+})
 </script>
 
 <template>

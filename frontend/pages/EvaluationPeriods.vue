@@ -291,4 +291,8 @@ const formatDate = (dateStr) => {
 onMounted(() => {
   fetchPeriods();
 });
+
+definePageMeta({
+  middleware: 'auth'
+})
 </script>

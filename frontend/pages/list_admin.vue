@@ -292,4 +292,8 @@ const fetchMasterData = async () => {
         console.error("Error fetching master data:", error);
     }
 }
+
+definePageMeta({
+  middleware: 'auth'
+})
 </script>

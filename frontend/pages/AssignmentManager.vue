@@ -201,6 +201,10 @@
 import { ref, computed, onMounted } from 'vue';
 import axios from 'axios';
 
+
+definePageMeta({
+  middleware: 'auth'
+})
 // --- State ---
 const periods = ref([]);
 const evaluators = ref([]);
