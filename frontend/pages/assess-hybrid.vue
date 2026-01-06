@@ -30,7 +30,7 @@ const progress = computed(() => {
     let total = 0, filled = 0
     evaluationForm.value.forEach(t => t.indicators.forEach(i => {
         total++
-        if ((i.type === 'score_1_4' && i.score) || (i.type === 'yes_no' && i.yes_no_val)) filled++
+        if ((i.type === 'score_1_4' && i.score) || (i.type === 'yes_no'&& i.yes_no_val !== null)) filled++
     }))
     return total === 0 ? 0 : Math.round((filled / total) * 100)
 })
@@ -47,7 +47,7 @@ const submitEvaluation = async () => {
         const results = []
         evaluationForm.value.forEach(topic => {
             topic.indicators.forEach(item => {
-                if (item.score || item.yes_no_val || item.note) {
+                if (item.score || item.yes_no_val !== null || item.note) {
                     results.push({
                         indicator_id: item.id,
                         score: item.score,
@@ -161,8 +161,8 @@ const submitEvaluation = async () => {
                                     <div v-else-if="item.type === 'yes_no'">
                                         <span class="text-caption font-weight-bold text-grey-darken-2 d-block mb-2">ผลการประเมิน</span>
                                         <v-btn-toggle v-model="item.yes_no_val" density="compact" rounded="lg" divided mandatory class="w-100 border">
-                                            <v-btn value="yes" color="success" class="flex-grow-1" variant="flat">ผ่าน</v-btn>
-                                            <v-btn value="no" color="error" class="flex-grow-1" variant="flat">ไม่ผ่าน</v-btn>
+                                            <v-btn :value="1" color="success" class="flex-grow-1" variant="flat">ผ่าน</v-btn>
+                                            <v-btn :value="0" color="error" class="flex-grow-1" variant="flat">ไม่ผ่าน</v-btn>
                                         </v-btn-toggle>
                                     </div>
 
