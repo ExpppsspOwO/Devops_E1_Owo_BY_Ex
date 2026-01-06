@@ -185,7 +185,7 @@ const handleLogin = async () => {
 
     // ✅ แก้ไขเงื่อนไขให้เป็น if - else if - else
     if (role === 'admin') {
-      await router.push('/') // ใช้ await เพื่อความชัวร์
+      await router.push('/EvaluationPeriods') // ใช้ await เพื่อความชัวร์
     } else if (role === 'evaluatee') {
       await router.push('/EvidenceSubmission')  
     }  else if (role === 'evaluator') {

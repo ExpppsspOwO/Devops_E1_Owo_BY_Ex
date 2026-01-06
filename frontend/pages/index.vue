@@ -1,4 +1,4 @@
-<!-- pages/dashboard/index.vue -->
+pages/dashboard/index.vue
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth'
@@ -6,9 +6,10 @@ import { useAuthStore } from '~/stores/auth'
 const auth = useAuthStore()
 const stats = ref({ uploads: 0, evaluations: 0, score: 0 })
 const loading = ref(true)
-
+const router = useRouter()
 onMounted(async () => {
   // โหลดข้อมูลตัวอย่าง
+  router.push('/login')
   setTimeout(() => {
     stats.value = { uploads: 12, evaluations: 5, score: 88 }
     loading.value = false

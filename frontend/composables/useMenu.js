@@ -11,11 +11,11 @@ export const useMenu = (role) => {
         {
           label: 'ผู้ดูแลระบบ (Administrator)',
           items: [
-            { 
-              label: 'จัดการผู้ใช้งาน (Users)', 
-              icon: 'mdi-database', 
-              to: '/' // หรือ path ที่เป็น list_admin ของคุณ
-            },
+            // { 
+            //   label: 'จัดการผู้ใช้งาน (Users)', 
+            //   icon: 'mdi-database', 
+            //   to: '/' // หรือ path ที่เป็น list_admin ของคุณ
+            // },
             { 
               label: 'จัดการรอบการประเมิน', 
               icon: 'mdi-calendar-clock', 
